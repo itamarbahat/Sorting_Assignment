@@ -132,19 +132,32 @@ def run_trials(sort_fn, array_gen, sizes, repetitions):
 # ─────────────────────────────────────────────
 
 def experiment_random(algo_ids, sizes, repetitions):
-    plt.figure(figsize=(10, 6))
+    all_results = {}
     for aid in algo_ids:
         name, fn = ALGORITHMS[aid]
         means, stds = run_trials(fn, lambda n: random_array(n), sizes, repetitions)
-        means = np.array(means)
-        stds  = np.array(stds)
-        plt.plot(sizes, means, marker='o', label=name)
-        plt.fill_between(sizes, means - stds, means + stds, alpha=0.2)
+        all_results[name] = (np.array(means), np.array(stds))
 
-    plt.xlabel("Array size (n)")
-    plt.ylabel("Runtime (seconds)")
-    plt.title("Runtime Comparison (Random Arrays)")
-    plt.legend()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
+    for name, (means, stds) in all_results.items():
+        ax1.plot(sizes, means, marker='o', label=name)
+        ax1.fill_between(sizes, means - stds, means + stds, alpha=0.2)
+    ax1.set_xlabel("Array size (n)")
+    ax1.set_ylabel("Runtime (seconds)")
+    ax1.set_title("Runtime Comparison – Linear Scale")
+    ax1.legend()
+
+    for name, (means, stds) in all_results.items():
+        ax2.plot(sizes, means, marker='o', label=name)
+        ax2.fill_between(sizes, np.maximum(means - stds, 1e-6), means + stds, alpha=0.2)
+    ax2.set_yscale('log')
+    ax2.set_xlabel("Array size (n)")
+    ax2.set_ylabel("Runtime (seconds, log scale)")
+    ax2.set_title("Runtime Comparison – Log Scale (growth rates)")
+    ax2.legend()
+
+    fig.suptitle("Runtime Comparison (Random Arrays)", fontsize=14, fontweight='bold')
     plt.tight_layout()
     plt.savefig("result1.png", dpi=150)
     plt.close()
@@ -158,21 +171,34 @@ def experiment_random(algo_ids, sizes, repetitions):
 NOISE_LEVELS = {1: 0.05, 2: 0.20}
 
 def experiment_nearly_sorted(algo_ids, sizes, noise_ratio, repetitions):
-    plt.figure(figsize=(10, 6))
+    all_results = {}
     for aid in algo_ids:
         name, fn = ALGORITHMS[aid]
         gen = lambda n, r=noise_ratio: nearly_sorted_array(n, r)
         means, stds = run_trials(fn, gen, sizes, repetitions)
-        means = np.array(means)
-        stds  = np.array(stds)
-        plt.plot(sizes, means, marker='o', label=name)
-        plt.fill_between(sizes, means - stds, means + stds, alpha=0.2)
+        all_results[name] = (np.array(means), np.array(stds))
 
     pct = int(noise_ratio * 100)
-    plt.xlabel("Array size (n)")
-    plt.ylabel("Runtime (seconds)")
-    plt.title(f"Runtime Comparison (Nearly Sorted, noise={pct}%)")
-    plt.legend()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
+    for name, (means, stds) in all_results.items():
+        ax1.plot(sizes, means, marker='o', label=name)
+        ax1.fill_between(sizes, means - stds, means + stds, alpha=0.2)
+    ax1.set_xlabel("Array size (n)")
+    ax1.set_ylabel("Runtime (seconds)")
+    ax1.set_title("Runtime Comparison – Linear Scale")
+    ax1.legend()
+
+    for name, (means, stds) in all_results.items():
+        ax2.plot(sizes, means, marker='o', label=name)
+        ax2.fill_between(sizes, np.maximum(means - stds, 1e-6), means + stds, alpha=0.2)
+    ax2.set_yscale('log')
+    ax2.set_xlabel("Array size (n)")
+    ax2.set_ylabel("Runtime (seconds, log scale)")
+    ax2.set_title("Runtime Comparison – Log Scale (growth rates)")
+    ax2.legend()
+
+    fig.suptitle(f"Runtime Comparison (Nearly Sorted, noise={pct}%)", fontsize=14, fontweight='bold')
     plt.tight_layout()
     plt.savefig("result2.png", dpi=150)
     plt.close()
