@@ -5,7 +5,8 @@
 ## Student Name(s)
 
 - Itamar Bahat 205805856
-- name of the other student. 
+- Yotam Vortman 206913238
+ 
 
 ## Selected Algorithms
 
